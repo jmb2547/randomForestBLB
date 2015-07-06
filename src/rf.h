@@ -35,6 +35,9 @@ void classRF(double *x, int *dimx, int *cl, int *ncl, int *cat, int *maxcat,
 void normClassWt(int *cl, const int nsample, const int nclass, 
                  const int useWt, double *classwt, int *classFreq);
 
+void gsl_ran_multinomial (const gsl_rng * r, const size_t K,
+                     const unsigned int N, const double p[], unsigned int n[]);
+
 void classForest(int *mdim, int *ntest, int *nclass, int *maxcat, 
                  int *nrnodes, int *jbt, double *xts, double *xbestsplit, 
                  double *pid, double *cutoff, double *countts, int *treemap, 
