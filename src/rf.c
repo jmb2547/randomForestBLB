@@ -32,6 +32,42 @@ void TestSetError(double *countts, int *jts, int *clts, int *jet, int ntest,
 		  int nclass, int nvote, double *errts,
 		  int labelts, int *nclts, double *cutoff);
 
+void gsl_ran_multinomial (const gsl_rng * r, const size_t K,
+                     const unsigned int N, const double p[], unsigned int n[])
+	{
+	  size_t k;
+	  double norm = 0.0;
+	  double sum_p = 0.0;
+
+	  unsigned int sum_n = 0;
+
+	  /* p[k] may contain non-negative weights that do not sum to 1.0.
+	   * Even a probability distribution will not exactly sum to 1.0
+	   * due to rounding errors. 
+	   */
+
+	  for (k = 0; k < K; k++)
+	    {
+	      norm += p[k];
+	    }
+
+	  for (k = 0; k < K; k++)
+	    {
+	      if (p[k] > 0.0)
+	        {
+	          n[k] = gsl_ran_binomial (r, p[k] / (norm - sum_p), N - sum_n);
+	        }
+	      else
+	        {
+	          n[k] = 0;
+	        }
+
+	      sum_p += p[k];
+	      sum_n += n[k];
+	    }
+
+	}
+
 /*  Define the R RNG for use from Fortran. */
 void F77_SUB(rrand)(double *r) { *r = unif_rand(); }
 
