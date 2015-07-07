@@ -256,6 +256,26 @@ void classRF(double *x, int *dimx, int *cl, int *ncl, int *cat, int *maxcat,
 
     R_CheckUserInterrupt();
 
+
+    /* trying to test multinomial */
+    unsigned int coeffs[5];
+    double probs[5] = {0.2,0.2,0.2,0.2,0.2};
+
+    /* for loop implementation
+    double probs[B];
+    for (k = 0,,k++) {
+        probs[k] = 1/B;
+    }
+    */
+
+
+    /* create a generator chosen by the 
+     environment variable GSL_RNG_TYPE */
+
+    ran_multinomial(5,10,probs,coeffs);
+
+
+
     /* Starting the main loop over number of trees. */
     GetRNGstate();
     if (trace <= Ntree) {
