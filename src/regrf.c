@@ -116,7 +116,6 @@ void regRF(double *x, double *y, int *xdim, int *sampsize,
     in         = (int *) S_alloc(nsample, sizeof(int));
     nodex      = (int *) S_alloc(nsample, sizeof(int));
     varUsed    = (int *) S_alloc(mdim, sizeof(int));
-    coeffs     = (int *) S_alloc(*sampsize, sizeof(int));
     nind = *replace ? NULL : (int *) S_alloc(nsample, sizeof(int));
 
     if (*testdat) {
