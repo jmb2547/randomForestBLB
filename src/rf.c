@@ -33,42 +33,6 @@ void TestSetError(double *countts, int *jts, int *clts, int *jet, int ntest,
 		  int nclass, int nvote, double *errts,
 		  int labelts, int *nclts, double *cutoff);
 
-void ran_multinomial (const size_t K,const unsigned int N, 
-						const double p[], unsigned int n[])
-{
-  size_t k;
-  double norm = 0.0;
-  double sum_p = 0.0;
-
-  unsigned int sum_n = 0;
-
-  /* p[k] may contain non-negative weights that do not sum to 1.0.
-   * Even a probability distribution will not exactly sum to 1.0
-   * due to rounding errors. 
-   */
-
-  for (k = 0; k < K; k++)
-    {
-      norm += p[k];
-    }
-
-  for (k = 0; k < K; k++)
-    {
-      if (p[k] > 0.0)
-        {
-          n[k] = rbinom(N - sum_n , p[k] / (norm - sum_p));
-        }
-      else
-        {
-          n[k] = 0;
-        }
-
-      sum_p += p[k];
-      sum_n += n[k];
-    }
-
-}
-
 /*  Define the R RNG for use from Fortran. */
 void F77_SUB(rrand)(double *r) { *r = unif_rand(); }
 
@@ -255,26 +219,6 @@ void classRF(double *x, int *dimx, int *cl, int *ncl, int *cat, int *maxcat,
     makeA(x, mdim, nsample, cat, at, b);
 
     R_CheckUserInterrupt();
-
-
-    /* trying to test multinomial */
-    unsigned int coeffs[5];
-    double probs[5] = {0.2,0.2,0.2,0.2,0.2};
-
-    /* for loop implementation
-    double probs[B];
-    for (k = 0,,k++) {
-        probs[k] = 1/B;
-    }
-    */
-
-
-    /* create a generator chosen by the 
-     environment variable GSL_RNG_TYPE */
-
-    ran_multinomial(5,10,probs,coeffs);
-
-
 
     /* Starting the main loop over number of trees. */
     GetRNGstate();

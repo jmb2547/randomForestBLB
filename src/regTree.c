@@ -30,9 +30,9 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
              double *upper, double *avnode, int *nodestatus, int nrnodes,
              int *treeSize, int nthsize, int mtry, int *mbest, int *cat,
 	     double *tgini, int *varUsed) {
-    int i, j, k, m, ncur, *jdex, *nodestart, *nodepop;
+    int i, j, k, m, g, ncur, *jdex, *nodestart, *nodepop;
     int ndstart, ndend, ndendl, nodecnt, jstat, msplit;
-    double d, ss, av, decsplit, ubest, sumnode;
+    double d, ss, av, ms, decsplit, ubest, sumnode;
 
     nodestart = (int *) Calloc(nrnodes, int);
     nodepop   = (int *) Calloc(nrnodes, int);
@@ -54,10 +54,13 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
     /* compute mean and sum of squares for Y */
     av = 0.0;
     ss = 0.0;
-    for (i = 0; i < nsample; ++i) {
-		d = y[jdex[i] - 1];
-		ss += i * (av - d) * (av - d) / (i + 1);
-		av = (i * av + d) / (i + 1);
+    ms = 0.0;
+    for (i = 0; i < nsample; ++i) { 
+    	d = y[jdex[i] - 1]; 
+    	g = multinomialCoeffs[jdex[i]-1]; 
+    	ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
+    	av = (av * ms + g * d) / (ms + g); 
+    	ms += g; 
     }
     avnode[0] = av;
 
@@ -113,11 +116,13 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 		/* compute mean and sum of squares for the left daughter node */
 		av = 0.0;
 		ss = 0.0;
-		for (j = ndstart; j <= ndendl; ++j) {
-			d = y[jdex[j]-1];
-			m = j - ndstart;
-			ss += m * (av - d) * (av - d) / (m + 1);
-			av = (m * av + d) / (m+1);
+		ms = 0.0;
+		for (j = ndstart; j <= ndendl; ++j) { 
+    		d = y[jdex[i] - 1]; 
+    		g = multinomialCoeffs[jdex[i]-1]; 
+    		ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
+    		av = (av * ms + g * d) / (ms + g); 
+    		ms += g;
 		}
 		avnode[ncur+1] = av;
 		nodestatus[ncur+1] = NODE_TOSPLIT;
@@ -128,11 +133,13 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 		/* compute mean and sum of squares for the right daughter node */
 		av = 0.0;
 		ss = 0.0;
+		ms = 0.0;
 		for (j = ndendl + 1; j <= ndend; ++j) {
-			d = y[jdex[j]-1];
-			m = j - (ndendl + 1);
-			ss += m * (av - d) * (av - d) / (m + 1);
-			av = (m * av + d) / (m + 1);
+			d = y[jdex[i] - 1]; 
+    		g = multinomialCoeffs[jdex[i]-1]; 
+    		ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
+    		av = (av * ms + g * d) / (ms + g); 
+    		ms += g;
 		}
 		avnode[ncur + 2] = av;
 		nodestatus[ncur + 2] = NODE_TOSPLIT;

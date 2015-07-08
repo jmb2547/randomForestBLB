@@ -13,11 +13,47 @@
 *******************************************************************/
 
 #include <R.h>
+#include <Rmath.h>
 #include "rf.h"
 
 void simpleLinReg(int nsample, double *x, double *y, double *coef,
 		  double *mse, int *hasPred);
 
+void ran_multinomial (const size_t K,const unsigned int N, 
+            const double p[], int coeffs)
+{
+  size_t k;
+  double norm = 0.0;
+  double sum_p = 0.0;
+
+  unsigned int sum_n = 0;
+
+  /* p[k] may contain non-negative weights that do not sum to 1.0.
+   * Even a probability distribution will not exactly sum to 1.0
+   * due to rounding errors. 
+   */
+
+  for (k = 0; k < K; k++)
+    {
+      norm += p[k];
+    }
+
+  for (k = 0; k < K; k++)
+    {
+      if (p[k] > 0.0)
+        {
+          n[k] = rbinom(N - sum_n , p[k] / (norm - sum_p));
+        }
+      else
+        {
+          n[k] = 0;
+        }
+
+      sum_p += p[k];
+      sum_n += n[k];
+    }
+
+}
 
 void regRF(double *x, double *y, int *xdim, int *sampsize,
 	   int *nthsize, int *nrnodes, int *nTree, int *mtry, int *imp,
@@ -56,7 +92,7 @@ void regRF(double *x, double *y, int *xdim, int *sampsize,
 
     int k, m, mr, n, nOOB, j, jout, idx, ntest, last, ktmp, nPerm,
         nsample, mdim, keepF, keepInbag;
-    int *oobpair, varImp, localImp, *varUsed;
+    int *oobpair, varImp, localImp, *varUsed, *coeffs;
 
     int *in, *nind, *nodex, *nodexts;
 
@@ -77,9 +113,10 @@ void regRF(double *x, double *y, int *xdim, int *sampsize,
     xtmp       = (double *) S_alloc(nsample, sizeof(double));
     resOOB     = (double *) S_alloc(nsample, sizeof(double));
 
-    in        = (int *) S_alloc(nsample, sizeof(int));
+    in         = (int *) S_alloc(nsample, sizeof(int));
     nodex      = (int *) S_alloc(nsample, sizeof(int));
     varUsed    = (int *) S_alloc(mdim, sizeof(int));
+    coeffs     = (int *) S_alloc(*sampsize, sizeof(int));
     nind = *replace ? NULL : (int *) S_alloc(nsample, sizeof(int));
 
     if (*testdat) {
@@ -142,6 +179,16 @@ void regRF(double *x, double *y, int *xdim, int *sampsize,
      * Start the loop over trees.
      *************************************/
     for (j = 0; j < *nTree; ++j) {
+    /* multinomial */
+    /*unsigned int coeffs[*sampsize];*/
+    /* for loop implementation */
+    double probs[*sampsize];
+    for (k = 0; k < *sampsize; ++k) {
+        probs[k] = 1/(*sampsize);
+    }
+
+    ran_multinomial(*sampsize,100,probs,coeffs);
+
 		idx = keepF ? j * *nrnodes : 0;
 		zeroInt(in, nsample);
         zeroInt(varUsed, mdim);
