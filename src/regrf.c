@@ -20,7 +20,7 @@ void simpleLinReg(int nsample, double *x, double *y, double *coef,
 		  double *mse, int *hasPred);
 
 void ran_multinomial (const size_t K,const unsigned int N, 
-            const double p[], int *coeffs)
+            const double p[], int n[])
 {
   size_t k;
   double norm = 0.0;
@@ -42,15 +42,15 @@ void ran_multinomial (const size_t K,const unsigned int N,
     {
       if (p[k] > 0.0)
         {
-          coeffs[k] = rbinom(N - sum_n , p[k] / (norm - sum_p));
+          n[k] = rbinom(N - sum_n , p[k] / (norm - sum_p));
         }
       else
         {
-          coeffs[k] = 0;
+          n[k] = 0;
         }
 
       sum_p += p[k];
-      sum_n += coeffs[k];
+      sum_n += n[k];
     }
 
 }
@@ -92,7 +92,7 @@ void regRF(double *x, double *y, int *xdim, int *sampsize,
 
     int k, m, mr, n, nOOB, j, jout, idx, ntest, last, ktmp, nPerm,
         nsample, mdim, keepF, keepInbag;
-    int *oobpair, varImp, localImp, *varUsed, *coeffs;
+    int *oobpair, varImp, localImp, *varUsed, coeffs[*sampsize];
 
     int *in, *nind, *nodex, *nodexts;
 
