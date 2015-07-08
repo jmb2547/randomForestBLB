@@ -46,7 +46,7 @@ void ran_multinomial (const size_t K,const unsigned int N,
         }
       else
         {
-          [k] = 0;
+          coeffs[k] = 0;
         }
 
       sum_p += p[k];
