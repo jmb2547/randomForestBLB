@@ -42,15 +42,15 @@ void ran_multinomial (const size_t K,const unsigned int N,
     {
       if (p[k] > 0.0)
         {
-          n[k] = rbinom(N - sum_n , p[k] / (norm - sum_p));
+          coeffs[k] = rbinom(N - sum_n , p[k] / (norm - sum_p));
         }
       else
         {
-          n[k] = 0;
+          [k] = 0;
         }
 
       sum_p += p[k];
-      sum_n += n[k];
+      sum_n += coeffs[k];
     }
 
 }

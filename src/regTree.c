@@ -29,7 +29,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
              int *rDaughter,
              double *upper, double *avnode, int *nodestatus, int nrnodes,
              int *treeSize, int nthsize, int mtry, int *mbest, int *cat,
-	     double *tgini, int *varUsed) {
+	     double *tgini, int *varUsed, int *coeffs) {
     int i, j, k, m, g, ncur, *jdex, *nodestart, *nodepop;
     int ndstart, ndend, ndendl, nodecnt, jstat, msplit;
     double d, ss, av, ms, decsplit, ubest, sumnode;
@@ -57,7 +57,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
     ms = 0.0;
     for (i = 0; i < nsample; ++i) { 
     	d = y[jdex[i] - 1]; 
-    	g = multinomialCoeffs[jdex[i]-1]; 
+    	g = *coeffs[jdex[i]-1]; 
     	ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
     	av = (av * ms + g * d) / (ms + g); 
     	ms += g; 
@@ -119,7 +119,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 		ms = 0.0;
 		for (j = ndstart; j <= ndendl; ++j) { 
     		d = y[jdex[i] - 1]; 
-    		g = multinomialCoeffs[jdex[i]-1]; 
+    		g = *coeffs[jdex[i]-1]; 
     		ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
     		av = (av * ms + g * d) / (ms + g); 
     		ms += g;
@@ -136,7 +136,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 		ms = 0.0;
 		for (j = ndendl + 1; j <= ndend; ++j) {
 			d = y[jdex[i] - 1]; 
-    		g = multinomialCoeffs[jdex[i]-1]; 
+    		g = *coeffs[jdex[i]-1]; 
     		ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
     		av = (av * ms + g * d) / (ms + g); 
     		ms += g;
