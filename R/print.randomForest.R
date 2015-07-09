@@ -20,6 +20,7 @@ function(x, ...) {
     }
   }
   if(x$type == "regression") {
+  print(x$coeffs)
     if(!is.null(x$mse)) {
       cat("          Mean of squared residuals: ", x$mse[length(x$mse)],
           "\n", sep="")
