@@ -1,11 +1,9 @@
 /*******************************************************************
    Copyright (C) 2001-7 Leo Breiman, Adele Cutler and Merck & Co., Inc.
-
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
    as published by the Free Software Foundation; either version 2
    of the License, or (at your option) any later version.
-
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -54,13 +52,20 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
     /* compute mean and sum of squares for Y */
     av = 0.0;
     ss = 0.0;
-    ms = 0.0;
-    for (i = 0; i < nsample; ++i) { 
-    	d = y[jdex[i] - 1]; 
-    	g = coeffs[jdex[i]-1]; 
-    	ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
-    	av = (av * ms + g * d) / (ms + g); 
-    	ms += g; 
+    ms = 0.0; 
+    for (i = 0; i < nsample; ++i) {
+		
+		d = y[jdex[i] - 1];
+		g = coeffs[jdex[i]-1];
+		ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
+		av = (av * ms + g * d) / (ms + g);
+		ms += g; 
+		
+		/*
+		d = y[jdex[i] - 1];
+		ss += i * (av - d) * (av - d) / (i + 1);
+		av = (i * av + d) / (i + 1);
+		*/
     }
     avnode[0] = av;
 
@@ -89,7 +94,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 
 		findBestSplit(x, jdex, y, mdim, nsample, ndstart, ndend, &msplit,
                       &decsplit, &ubest, &ndendl, &jstat, mtry, sumnode,
-                      nodecnt, cat);
+                      nodecnt, cat, multcoeffs);
 #ifdef RF_DEBUG
 		Rprintf(" after findBestSplit: ndstart=%d, ndend=%d, jstat=%d, decsplit=%f, msplit=%d\n",
 				ndstart, ndend, jstat, decsplit, msplit);
@@ -117,13 +122,22 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 		av = 0.0;
 		ss = 0.0;
 		ms = 0.0;
-		for (j = ndstart; j <= ndendl; ++j) { 
-    		d = y[jdex[i] - 1]; 
-    		g = coeffs[jdex[i]-1]; 
-    		ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
-    		av = (av * ms + g * d) / (ms + g); 
-    		ms += g;
+		for (j = ndstart; j <= ndendl; ++j) {
+			
+			d = y[jdex[j]-1];
+			g = coeffs[jdex[j]-1];
+			ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
+			av = (av * ms + g * d) / (ms + g);
+			ms += g; 
+			
+			/*
+			d = y[jdex[j]-1];
+			m = j - ndstart;
+			ss += m * (av - d) * (av - d) / (m + 1);
+			av = (m * av + d) / (m+1);
+			*/
 		}
+
 		avnode[ncur+1] = av;
 		nodestatus[ncur+1] = NODE_TOSPLIT;
 		if (nodepop[ncur + 1] <= nthsize) {
@@ -135,11 +149,19 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 		ss = 0.0;
 		ms = 0.0;
 		for (j = ndendl + 1; j <= ndend; ++j) {
-			d = y[jdex[i] - 1]; 
-    		g = coeffs[jdex[i]-1]; 
-    		ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
-    		av = (av * ms + g * d) / (ms + g); 
-    		ms += g;
+			
+			d = y[jdex[j]-1];
+			g = coeffs[jdex[j]-1];
+			ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
+			av = (av * ms + g * d) / (ms + g);
+			ms += g; 
+			
+			/*
+			d = y[jdex[j]-1];
+			m = j - (ndendl + 1);
+			ss += m * (av - d) * (av - d) / (m + 1);
+			av = (m * av + d) / (m+1);
+			*/
 		}
 		avnode[ncur + 2] = av;
 		nodestatus[ncur + 2] = NODE_TOSPLIT;
@@ -174,9 +196,9 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 void findBestSplit(double *x, int *jdex, double *y, int mdim, int nsample,
 		   int ndstart, int ndend, int *msplit, double *decsplit,
 		   double *ubest, int *ndendl, int *jstat, int mtry,
-		   double sumnode, int nodecnt, int *cat) {
+		   double sumnode, int nodecnt, int *cat, int *multcoeffs) {
     int last, ncat[MAX_CAT], icat[MAX_CAT], lc, nl, nr, npopl, npopr;
-    int i, j, kv, l, *mind, *ncase;
+    int i, j, kv, l, g, *mind, *ncase;
     double *xt, *ut, *v, *yl, sumcat[MAX_CAT], avcat[MAX_CAT], tavcat[MAX_CAT], ubestt;
     double crit, critmax, critvar, suml, sumr, d, critParent;
 
@@ -245,11 +267,22 @@ void findBestSplit(double *x, int *jdex, double *y, int mdim, int nsample,
 		crit = 0.0;
 		/* Search through the "gaps" in the x-variable. */
 		for (j = ndstart; j <= ndend - 1; ++j) {
+			
+			d = yl[ncase[j] - 1];
+			g = coeffs[ncase[j]-1];
+			suml += d * g;
+			sumr -= d * g;
+			npopl += g;
+			npopr -= g;
+			
+			/*
 			d = yl[ncase[j] - 1];
 			suml += d;
 			sumr -= d;
 			npopl++;
 			npopr--;
+			*/
+
 			if (v[j] < v[j+1]) {
 				crit = (suml * suml / npopl) + (sumr * sumr / npopr) -
 					critParent;
