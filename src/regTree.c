@@ -94,7 +94,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 
 		findBestSplit(x, jdex, y, mdim, nsample, ndstart, ndend, &msplit,
                       &decsplit, &ubest, &ndendl, &jstat, mtry, sumnode,
-                      nodecnt, cat, multcoeffs);
+                      nodecnt, cat, coeffs);
 #ifdef RF_DEBUG
 		Rprintf(" after findBestSplit: ndstart=%d, ndend=%d, jstat=%d, decsplit=%f, msplit=%d\n",
 				ndstart, ndend, jstat, decsplit, msplit);
@@ -196,7 +196,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 void findBestSplit(double *x, int *jdex, double *y, int mdim, int nsample,
 		   int ndstart, int ndend, int *msplit, double *decsplit,
 		   double *ubest, int *ndendl, int *jstat, int mtry,
-		   double sumnode, int nodecnt, int *cat, int *multcoeffs) {
+		   double sumnode, int nodecnt, int *cat, int coeffs[]) {
     int last, ncat[MAX_CAT], icat[MAX_CAT], lc, nl, nr, npopl, npopr;
     int i, j, kv, l, g, *mind, *ncase;
     double *xt, *ut, *v, *yl, sumcat[MAX_CAT], avcat[MAX_CAT], tavcat[MAX_CAT], ubestt;
