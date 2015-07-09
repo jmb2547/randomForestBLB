@@ -50,7 +50,7 @@ void ran_multinomial (const size_t K, const int N,
     {   
       /*
       coeffs[k] = 1.0; */
-      coeffs[k] = rbinom( 1, 1);
+      coeffs[k] = rbinom( 1, 1.0);
     }
 
     else
