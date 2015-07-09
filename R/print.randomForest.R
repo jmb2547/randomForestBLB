@@ -21,7 +21,7 @@ function(x, ...) {
   }
   if(x$type == "regression") {
     if(!is.null(x$mse)) {
-      cat("          Mean of squared (test) residuals: ", x$mse[length(x$mse)],
+      cat("          Mean of squared residuals: ", x$mse[length(x$mse)],
           "\n", sep="")
       cat("                    % Var explained: ",
           round(100*x$rsq[length(x$rsq)], digits=2), "\n", sep="")
