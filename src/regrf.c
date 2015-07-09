@@ -500,6 +500,5 @@ void simpleLinReg(int nsample, double *x, double *y, double *coef,
   }
     }
     *mse /= nout;
-    *mse = coeffs;
     return;
 }
