@@ -40,11 +40,11 @@ void ran_multinomial (const size_t K, const int N,
    * due to rounding errors. 
    */
 
-   for (k = 0; k < K; ++k) {
+   for (k = 0; k < K; k++) {
     norm += p[k];
    }
 
-   for (k = 0; k < K; ++k) {
+   for (k = 0; k < K; k++) {
 
     if (p[k] > 0.0) 
     {   
@@ -189,8 +189,8 @@ void regRF(double *x, double *y, int *xdim, int *sampsize,
           */
       double probs[*sampsize];
 
-      for (k = 0; k < nsample; ++k) {
-        probs[k] = 1.0 / nsample;
+      for (k = 0; k < *sampsize; k++) {
+        probs[k] = 1.0 / *sampsize;
       }
 
       /*
