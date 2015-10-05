@@ -1,9 +1,11 @@
 /*******************************************************************
    Copyright (C) 2001-7 Leo Breiman, Adele Cutler and Merck & Co., Inc.
+
    This program is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License
    as published by the Free Software Foundation; either version 2
    of the License, or (at your option) any later version.
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -27,7 +29,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
              int *rDaughter,
              double *upper, double *avnode, int *nodestatus, int nrnodes,
              int *treeSize, int nthsize, int mtry, int *mbest, int *cat,
-	     double *tgini, int *varUsed, int coeffs[]) {
+	     double *tgini, int *varUsed, int *multcoeffs) {
     int i, j, k, g, ncur, *jdex, *nodestart, *nodepop;
     int ndstart, ndend, ndendl, nodecnt, jstat, msplit;
     double d, ss, av, ms, decsplit, ubest, sumnode;
@@ -56,7 +58,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
     for (i = 0; i < nsample; ++i) {
 		
 		d = y[jdex[i] - 1];
-		g = coeffs[jdex[i]-1];
+		g = multcoeffs[jdex[i]-1];
 		ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
 		av = (av * ms + g * d) / (ms + g);
 		ms += g; 
@@ -94,7 +96,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 
 		findBestSplit(x, jdex, y, mdim, nsample, ndstart, ndend, &msplit,
                       &decsplit, &ubest, &ndendl, &jstat, mtry, sumnode,
-                      nodecnt, cat, coeffs);
+                      nodecnt, cat, multcoeffs);
 #ifdef RF_DEBUG
 		Rprintf(" after findBestSplit: ndstart=%d, ndend=%d, jstat=%d, decsplit=%f, msplit=%d\n",
 				ndstart, ndend, jstat, decsplit, msplit);
@@ -125,7 +127,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 		for (j = ndstart; j <= ndendl; ++j) {
 			
 			d = y[jdex[j]-1];
-			g = coeffs[jdex[j]-1];
+			g = multcoeffs[jdex[j]-1];
 			ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
 			av = (av * ms + g * d) / (ms + g);
 			ms += g; 
@@ -151,7 +153,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 		for (j = ndendl + 1; j <= ndend; ++j) {
 			
 			d = y[jdex[j]-1];
-			g = coeffs[jdex[j]-1];
+			g = multcoeffs[jdex[j]-1];
 			ss += ((g * ms) / (ms + g)) * (av - d) * (av - d);
 			av = (av * ms + g * d) / (ms + g);
 			ms += g; 
@@ -196,7 +198,7 @@ void regTree(double *x, double *y, int mdim, int nsample, int *lDaughter,
 void findBestSplit(double *x, int *jdex, double *y, int mdim, int nsample,
 		   int ndstart, int ndend, int *msplit, double *decsplit,
 		   double *ubest, int *ndendl, int *jstat, int mtry,
-		   double sumnode, int nodecnt, int *cat, int coeffs[]) {
+		   double sumnode, int nodecnt, int *cat, int *multcoeffs) {
     int last, ncat[MAX_CAT], icat[MAX_CAT], lc, nl, nr, npopl, npopr;
     int i, j, kv, l, g, *mind, *ncase;
     double *xt, *ut, *v, *yl, sumcat[MAX_CAT], avcat[MAX_CAT], tavcat[MAX_CAT], ubestt;
@@ -269,7 +271,7 @@ void findBestSplit(double *x, int *jdex, double *y, int mdim, int nsample,
 		for (j = ndstart; j <= ndend - 1; ++j) {
 			
 			d = yl[ncase[j] - 1];
-			g = coeffs[ncase[j]-1];
+			g = multcoeffs[ncase[j]-1];
 			suml += d * g;
 			sumr -= d * g;
 			npopl += g;
@@ -371,22 +373,27 @@ void predictRegTree(double *x, int nsample, int mdim,
         }
     }
 
-    for (i = 0; i < nsample; ++i) {
-	k = 0;
-	while (nodestatus[k] != NODE_TERMINAL) { /* go down the tree */
-	    m = splitVar[k] - 1;
-	    if (cat[m] == 1) {
-		k = (x[m + i*mdim] <= split[k]) ?
-		    lDaughter[k] - 1 : rDaughter[k] - 1;
-	    } else {
+    for (i = 0; i < nsample; ++i) 
+    {
+		k = 0;
+		while (nodestatus[k] != NODE_TERMINAL) 
+		{ /* go down the tree */
+	    	m = splitVar[k] - 1;
+	    	if (cat[m] == 1) 
+	    	{
+				k = (x[m + i*mdim] <= split[k]) ?
+		    	lDaughter[k] - 1 : rDaughter[k] - 1;
+	    	} 
+	    	else 
+	    	{
 	        /* Split by a categorical predictor */
-	        k = cbestsplit[(int) x[m + i * mdim] - 1 + k * maxcat] ?
+	        	k = cbestsplit[(int) x[m + i * mdim] - 1 + k * maxcat] ?
                     lDaughter[k] - 1 : rDaughter[k] - 1;
-	    }
-	}
-	/* terminal node: assign prediction and move on to next */
-	ypred[i] = nodepred[k];
-	nodex[i] = k + 1;
+	    	}
+		}
+		/* terminal node: assign prediction and move on to next */
+		ypred[i] = nodepred[k];
+		nodex[i] = k + 1;
     }
     if (maxcat > 1) Free(cbestsplit);
 }

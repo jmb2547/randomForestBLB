@@ -11,10 +11,10 @@ plot.randomForest <- function(x, type="l", main=deparse(substitute(x)), ...) {
   }
   if(test) {
     colnames(err) <- c("OOB", "Test")
-    matplot(1:x$ntree, err, type = type, xlab="Testtrees", ylab="Error",
+    matplot(1:x$ntree, err, type = type, xlab="trees", ylab="Error",
             main=main, ...)
   } else {
-    matplot(1:x$ntree, err, type = type, xlab="Testtrees", ylab="Error",
+    matplot(1:x$ntree, err, type = type, xlab="trees", ylab="Error",
             main=main, ...)
   }
   invisible(err)
